@@ -1,0 +1,14 @@
+---
+applications:
+- name: SentimentAnalysis-Frontend
+  memory: 128M
+  instances: 1
+  command: node app.js
+  host: sentimentanalysis-frontend-akehir
+  domain: eu-gb.mybluemix.net
+  path: .
+  services: 
+   - mongodb-sentiment
+   - Auto-Scaling-z4
+   - Monitoring and Analytics-t1
+

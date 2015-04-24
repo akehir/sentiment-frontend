@@ -1,0 +1,79 @@
+<html ng-app="sentiment" ng-controller="myCtrl">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta charset="utf8" />
+	<title>ASE Sentiment Analysis - Dashboard</title>
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<link href="css/dashboard.css" rel="stylesheet">
+
+	<script src="js/angular.js"></script>
+	<script src="js/controller.js"></script>
+</head>
+<body>
+	<nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">ASE - Sentiment Analysis</a>
+        </div>
+
+        <form class="navbar-form navbar-right">
+	        <input type="text" class="form-control" ng-model="addTerm" placeholder="Phrase...">
+	    	<button type="submit" class="btn btn-success" ng-click="addPressed()">Add</button>
+	    </form>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+		<h1 class="page-header">Dashboard</h1>
+
+		<div class="row placeholders">
+			<div class="col-xs-6 col-sm-3 placeholder">
+			  <h4>{{totalPhrases}}</h4>
+			  <span class="text-muted">Phrases</span>
+			</div>
+			<div class="col-xs-6 col-sm-3 placeholder">
+			  <h4>{{totalTweets}}</h4>
+			  <span class="text-muted">Tweets Analyzed</span>
+			</div>
+			<div class="col-xs-6 col-sm-3 placeholder">
+			  <h4>45%</h4>
+			  <span class="text-muted">CPU</span>
+			</div>
+			<div class="col-xs-6 col-sm-3 placeholder">
+			  <h4>60%</h4>
+			  <span class="text-muted">Memory</span>
+			</div>
+		</div>
+
+		<h2 class="sub-header">Analysis results</h2>
+		<div class="table-responsive">
+			<table class="table table-striped">
+			  <thead>
+			    <tr>
+			      <th>#</th>
+			      <th> </th>
+			      <th style="width: 100%">Phrase</th>
+			      <th>Tweets</th>
+			      <th>Feeling</th>
+			      <th>Score</th>
+			      <th> </th>
+			    </tr>
+			  </thead>
+			  <tbody>
+			    <tr class="tr-middle" ng-repeat="sentiment in sentiments">
+			      <td>{{$index + 1}}</td>
+			      <td class="emoji">{{sentiment.emoji}}</td>
+			      <td>{{sentiment.phrase}}</td>
+			      <td>{{sentiment.tweets}}</td>
+			      <td>{{sentiment.totalsentiment}}</td>
+			      <td>{{sentiment.score}}</td>
+			      <td><button type="button" class="btn btn-danger" ng-click="removePressed(sentiment)">Remove</button></td>
+			    </tr>
+			  </tbody>
+			</table>
+		</div>
+    </div>
+</body>
+</html>
