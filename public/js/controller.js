@@ -11,9 +11,13 @@ app.controller('myCtrl', function($scope, $http, $timeout) {
         $scope.addTerm = "";
     };
 
+    $scope.infoPressed = function(sentiment) {
+        $scope.selectedPhrase = sentiment;
+    };
+
     $scope.removePressed = function(sentiment) {
         $http.delete('/sentiment/' + sentiment.phrase).success(function (data, status) {
-            alert("Delete successfully recv'd by server. (Not implemented yet?)");     
+            console.log("Deleted phrase "+ sentiment.phrase);    
         });
     };
 
@@ -29,6 +33,7 @@ app.controller('myCtrl', function($scope, $http, $timeout) {
                 var totalsentiment  = data[i].totalsentiment;
                 var score           = data[i].score;
                 var emoji           = "😐";
+                var history         = data[i].history;
 
                 switch (true) {
                     case (score === null):
@@ -62,8 +67,8 @@ app.controller('myCtrl', function($scope, $http, $timeout) {
                     tweets:         tweets,
                     totalsentiment: totalsentiment,
                     score:          (score !== null ? score.toFixed(2) : score),
-                    emoji:          emoji 
-
+                    emoji:          emoji,
+                    history:        history 
                 };
 
                 totalTweets += data[i].tweets;
@@ -74,6 +79,12 @@ app.controller('myCtrl', function($scope, $http, $timeout) {
 		    $scope.totalPhrases = sentiments.length;
             $scope.totalTweets = totalTweets;
 		  });
+
+        $http.get('/usage').success(function(data) {
+            $scope.memUsed = Math.round(data.memUsed);
+            $scope.memTotal = Math.round(data.memTotal);
+            $scope.cpuLoad = Math.round(data.cpuLoad * 100);
+        });
     };
 
     var poll = function() {
@@ -86,6 +97,8 @@ app.controller('myCtrl', function($scope, $http, $timeout) {
     $scope.totalTerms = 0;
     $scope.totalTweets = 0;
     $scope.sentiments = [];
+
+    $scope.selectedPhrase = null;
 
     refresh();
    	poll();
