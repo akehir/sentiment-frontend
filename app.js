@@ -22,6 +22,8 @@ var mongo = {};
 var dbAnalyzedCollection	= "currentlyAnalyzing";
 var dbKeywordsCollection	= "keywords";
 
+console.log(process.env.VCAP_SERVICES);
+
 if (process.env.VCAP_SERVICES) {
     var env = JSON.parse(process.env.VCAP_SERVICES);
     if (env['mongodb-2.2']) {
