@@ -4,12 +4,6 @@ var mongoClient = require("mongodb").MongoClient;
 var os = require("os-utils");
 
 
-// Settings
-var dbURL 			= "mongodb://localhost:27017/ase";
-var dbAnalyzedCollection	= "currentlyAnalyzing";
-var dbKeywordsCollection	= "keywords";
-
-
 // defensiveness against errors parsing request bodies...
 process.on('uncaughtException', function (err) {
 	console.log('Caught exception: ' + err.stack);
@@ -24,11 +18,27 @@ app.configure(function() {
 
 
 // Database Connection
+var mongo = {};
+var dbAnalyzedCollection	= "currentlyAnalyzing";
+var dbKeywordsCollection	= "keywords";
+
+if (process.env.VCAP_SERVICES) {
+    var env = JSON.parse(process.env.VCAP_SERVICES);
+    if (env['mongodb-2.2']) {
+        mongo['url'] = env['mongodb-2.2'][0]['credentials']['uri'];
+    }
+} else {
+   console.log("No VCAP Services!");
+}
+
+
 var myDb;
-var mongoConnection = mongoClient.connect(dbURL, function(err, db) {
+var mongoConnection = mongoClient.connect(mongo.url, function(err, db) {
   if(!err) {
-    console.log("We are connected");
+    console.log("Connection to mongoDB established");
     myDb = db;
+  } else {
+  	console.log("Failed to connect to database!");
   }
 });
 
