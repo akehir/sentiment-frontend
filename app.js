@@ -5,7 +5,7 @@ var os = require("os-utils");
 
 
 // Settings
-var dbURL 					= "mongodb://localhost:27017/ase";
+var dbURL 			= "mongodb://localhost:27017/ase";
 var dbAnalyzedCollection	= "currentlyAnalyzing";
 var dbKeywordsCollection	= "keywords";
 
