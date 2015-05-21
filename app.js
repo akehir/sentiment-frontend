@@ -22,13 +22,15 @@ var mongo = {};
 var dbAnalyzedCollection	= "currentlyAnalyzing";
 var dbKeywordsCollection	= "keywords";
 
-console.log(process.env.VCAP_SERVICES);
-
 if (process.env.VCAP_SERVICES) {
     var env = JSON.parse(process.env.VCAP_SERVICES);
-    if (env['mongodb-2.2']) {
-        mongo['url'] = env['mongodb-2.2'][0]['credentials']['uri'];
+    console.log(env);
+
+    if (env['mongodb-2.4']) {
+        mongo['url'] = env['mongodb-2.4'][0]['credentials']['url'];
     }
+
+    console.log("Mongo URL:" + mongo.url);
 } else {
    console.log("No VCAP Services!");
 }
