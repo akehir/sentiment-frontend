@@ -19,12 +19,12 @@ app.configure(function() {
 
 // Database Connection
 var mongo = {};
-var dbAnalyzedCollection	= "currentlyAnalyzing";
+var dbResultsCollection		= "results";
+var dbAnalyzingCollection	= "analyzing";
 var dbKeywordsCollection	= "keywords";
 
 if (process.env.VCAP_SERVICES) {
     var env = JSON.parse(process.env.VCAP_SERVICES);
-    console.log(env);
 
     if (env['mongodb-2.4']) {
         mongo['url'] = env['mongodb-2.4'][0]['credentials']['url'];
@@ -53,7 +53,7 @@ app.get('/sentiment', function (req, res) {
 		Called by AngularJS application
 		Delivers JSON with current sentiment analysis results
 	*/
-	var collection = myDb.collection(dbAnalyzedCollection);
+	var collection = myDb.collection(dbResultsCollection);
 	collection.find().toArray(function(err, docs) {
         res.json(docs);
       });
@@ -131,7 +131,7 @@ app.post('/sentiment', function (req, res) {
 			    	collection.insert({phrase: phrase});
 			    	console.log("Added phrase " + phrase + ".");
 			    }
-		        res.send(200);			
+		        res.send(200);
 		      });
 
 		} else {
