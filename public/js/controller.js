@@ -23,6 +23,8 @@ app.controller('myCtrl', function($scope, $http, $timeout) {
 
     var refresh = function() {
     	$http.get('/sentiment').success(function(data) {
+            console.log(data);
+
     		var sentiments = [];
             var totalTweets = 0;
 
