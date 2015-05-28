@@ -2,6 +2,7 @@ var port = (process.env.VCAP_APP_PORT || 3000);
 var express = require("express");
 var mongoClient = require("mongodb").MongoClient;
 var os = require("os-utils");
+var moment = require('moment');
 
 
 // defensiveness against errors parsing request bodies...
@@ -17,11 +18,18 @@ app.configure(function() {
 });
 
 
+// Thresholds
+var averageUpperBound =  1.3;
+var averageLowerBound = -1.3;
+var scoreUpperBound   =  1.0;
+var scoreLowerBound   =  0.0;
+
+
 // Database Connection
 var mongo = {};
-var dbResultsCollection		= "results";
-var dbAnalyzingCollection	= "analyzing";
-var dbKeywordsCollection	= "keywords";
+var dbResultsCollection			= "results";
+var dbServerUsageCollection		= "serverusage";
+var dbKeywordsCollection		= "keywords";
 
 if (process.env.VCAP_SERVICES) {
     var env = JSON.parse(process.env.VCAP_SERVICES);
@@ -47,54 +55,48 @@ var mongoConnection = mongoClient.connect(mongo.url, function(err, db) {
 });
 
 
+
 // REST API
 app.get('/sentiment', function (req, res) {
 	/*
-		Called by AngularJS application
-		Delivers JSON with current sentiment analysis results
+		Delivers all phrases with score of last day
 	*/
-	var collection = myDb.collection(dbResultsCollection);
-	collection.find().toArray(function(err, docs) {
-        res.json(docs);
+	var result = [];
+
+	var keywordsCollection = myDb.collection(dbKeywordsCollection);
+
+	// var currentTime = new Date();
+
+	// var startDate  = currentTime.toISOString();
+	// var endDate  = new Date(new Date().setDate(new Date().getDate()-5))
+
+	var startDate = moment().startOf('day');
+	var endDate = moment().startOf('day').subtract(1, 'days');
+
+	console.log(startDate + " --- " + endDate);
+
+	keywordsCollection.find().toArray(function(err, docs) {
+		for (var i = 0; i < docs.length; i++) {
+			var sentiment = getSentimentForPhrase(docs.phrase, startDate, endDate);
+			result.push(sentiment);
+		}
+
+        res.json(result);
       });
 
 });
 
-app.get('/history', function (req, res) {
+app.get('/sentiment/:phrase/:startDate/:endDate', function (req, res) {
 	/*
-		Called by AngularJS application
-		Delivers JSON with history sentiment analysis results from database
-
-		TODO: Implement function
+		Delivers JSON with results for specific dates
 	*/
 
-	var sentiments = [
-			{
-				phrase:  'Mockphrase',
-				history: [
-					{
-						date: 			"2015-03-29T18:25:43.511Z", 
-						tweets: 		47,
-						totalsentiment: 42,
-						score: 			0.95, 
-					},
-					{
-						date: 			"2015-03-28T18:25:43.511Z", 
-						tweets: 		345,
-						totalsentiment: 200,
-						score: 			0.725, 
-					},
-					{
-						date: 			"2015-03-27T18:25:43.511Z", 
-						tweets: 		704,
-						totalsentiment: -100,
-						score: 			0.154, 
-					}
-				] 
-			}
-		];
+	var phrase = req.params.phrase;
+	var startDate = req.params.startDate;
+	var endDate = req.params.endDate;
 
-	res.json(sentiments);
+	var sentiment = getSentimentForPhrase(phrase, startDate, endDate);
+	res.json(sentiment);
 });
 
 app.get('/usage', function (req, res) {
@@ -115,7 +117,6 @@ app.get('/usage', function (req, res) {
 
 app.post('/sentiment', function (req, res) {
 	/*
-		Called by AngularJS application
 		Adds new phrase for monitoring.
 	*/
 	try {
@@ -144,15 +145,14 @@ app.post('/sentiment', function (req, res) {
 
 app.delete('/sentiment/:phrase', function (req, res) {
 	/*
-		Called by AngularJS application
 		Deletes phrase from monitoring.
 	*/
 	var phrase = req.params.phrase;
 	
-	var collection = myDb.collection(dbKeywordsCollection);
-	collection.find({phrase: phrase}).toArray(function(err, docs) {
+	var keywordsCollection = myDb.collection(dbKeywordsCollection);
+	keywordsCollection.find({phrase: phrase}).toArray(function(err, docs) {
 		if (docs.length > 0) {
-			collection.remove({phrase: phrase});
+			keywordsCollection.remove({phrase: phrase});
 	    	console.log("Removed phrase " + phrase + ".");
 	    } else {
 	    	console.log("Error: Phrase " + phrase + " not found.");
@@ -164,3 +164,50 @@ app.delete('/sentiment/:phrase', function (req, res) {
 
 app.listen(port);
 console.log("Server listening on port " + port);
+
+
+
+//Functions
+function getSentimentForPhrase(phrase, startDate, endDate) {
+
+	var resultsCollection = myDb.collection(dbResultsCollection);
+	resultsCollection.find({phrase: phrase, date: {'$gte': startDate,'$lt': endDate}}).sort({date: -1}).toArray(function(err, docs) {
+
+		var tweets = 0;
+		var totalsentiment = 0;
+		var history = [];
+
+		for (var i = 0; i<docs.length; i++) {
+			var entry = docs[i];
+
+			tweets++;
+			totalsentiment += entry.sentiment;
+
+			if(i < 5) {
+				var tweet = {
+					text: entry.text,
+					sentiment: entry.sentiment
+				};
+				history.push(tweet);
+			}
+		}
+
+		var average = totalsentiment / tweets;
+
+		// Limit average to bounds
+		if (average > averageUpperBound) average = averageUpperBound;
+		if (average < averageLowerBound) average = averageLowerBound;
+		
+		// Map average to score between 0 and 1
+		var score = ((average - averageLowerBound) / (averageUpperBound - averageLowerBound)) * (scoreUpperBound - scoreLowerBound) + scoreLowerBound;
+
+		return {
+				phrase: phrase,
+				tweets: tweets,
+				totalsentiment: totalsentiment,
+				average: average,
+				score: score,
+				history: history
+			};
+	});
+}
