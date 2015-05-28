@@ -41,6 +41,7 @@ if (process.env.VCAP_SERVICES) {
     console.log("Mongo URL:" + mongo.url);
 } else {
    console.log("No VCAP Services!");
+   mongo['url'] = "mongodb://localhost:27017/ase";
 }
 
 
@@ -61,29 +62,26 @@ app.get('/sentiment', function (req, res) {
 	/*
 		Delivers all phrases with score of last day
 	*/
-	var result = [];
-
 	var keywordsCollection = myDb.collection(dbKeywordsCollection);
 
-	// var currentTime = new Date();
-
-	// var startDate  = currentTime.toISOString();
-	// var endDate  = new Date(new Date().setDate(new Date().getDate()-5))
-
-	var startDate = moment().startOf('day');
-	var endDate = moment().startOf('day').subtract(1, 'days');
+	var startDate = moment().startOf('day').toISOString();
+	var endDate = moment().startOf('day').subtract(1, 'days').toISOString();
 
 	console.log(startDate + " --- " + endDate);
 
+	var result = [];
 	keywordsCollection.find().toArray(function(err, docs) {
-		for (var i = 0; i < docs.length; i++) {
-			var sentiment = getSentimentForPhrase(docs.phrase, startDate, endDate);
-			result.push(sentiment);
-		}
+		docs.forEach(function(doc, index) {
+			getSentimentForPhrase(doc.phrase, startDate, endDate, function(sentiment) {
+				result.push(sentiment);
 
-        res.json(result);
-      });
-
+				if (index === docs.length - 1) {
+					console.log(result);
+		             res.send(result);
+		         }
+			});	
+		});
+	});
 });
 
 app.get('/sentiment/:phrase/:startDate/:endDate', function (req, res) {
@@ -168,10 +166,16 @@ console.log("Server listening on port " + port);
 
 
 //Functions
-function getSentimentForPhrase(phrase, startDate, endDate) {
+// var getSentimentForAllKeywords = function(callback) {
+	
+// }
+
+
+var getSentimentForPhrase = function(phrase, startDate, endDate, callback) {
 
 	var resultsCollection = myDb.collection(dbResultsCollection);
-	resultsCollection.find({phrase: phrase, date: {'$gte': startDate,'$lt': endDate}}).sort({date: -1}).toArray(function(err, docs) {
+	//resultsCollection.find({phrase: phrase, date: {'$gte': startDate,'$lt': endDate}}).sort({date: -1}).toArray(function(err, docs) {
+	resultsCollection.find({phrase: phrase}).sort({date: -1}).toArray(function(err, docs) {
 
 		var tweets = 0;
 		var totalsentiment = 0;
@@ -201,7 +205,7 @@ function getSentimentForPhrase(phrase, startDate, endDate) {
 		// Map average to score between 0 and 1
 		var score = ((average - averageLowerBound) / (averageUpperBound - averageLowerBound)) * (scoreUpperBound - scoreLowerBound) + scoreLowerBound;
 
-		return {
+		var sentiment = {
 				phrase: phrase,
 				tweets: tweets,
 				totalsentiment: totalsentiment,
@@ -209,5 +213,7 @@ function getSentimentForPhrase(phrase, startDate, endDate) {
 				score: score,
 				history: history
 			};
+
+		callback(sentiment);
 	});
 }
