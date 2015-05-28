@@ -81,6 +81,10 @@ app.get('/sentiment', function (req, res) {
 		         }
 			});	
 		});
+
+		if (docs.length == 0) {
+			res.send([]);
+		}
 	});
 });
 
