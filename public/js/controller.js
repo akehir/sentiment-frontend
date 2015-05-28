@@ -23,8 +23,6 @@ app.controller('myCtrl', function($scope, $http, $timeout) {
 
     var refresh = function() {
     	$http.get('/sentiment').success(function(data) {
-            console.log(data);
-
     		var sentiments = [];
             var totalTweets = 0;
 
@@ -34,47 +32,32 @@ app.controller('myCtrl', function($scope, $http, $timeout) {
                 var tweets          = data[i].tweets;
                 var totalsentiment  = data[i].totalsentiment;
                 var score           = data[i].score;
-                var emoji           = "😐";
+                score = (score !== null ? score.toFixed(2) : score);
+                var emoji           = getEmojiForScore(score);
                 var history         = data[i].history;
 
-                switch (true) {
-                    case (score === null):
-                        emoji = "❔";
-                        break;
-                    case (score <  0.15):
-                        emoji = "😡";
-                        break;
-                    case (score >= 0.15 && score < 0.30):
-                        emoji = "😠";
-                        break;
-                    case (score >= 0.30 && score < 0.45):
-                        emoji = "😐";
-                        break;
-                    case (score >= 0.45 && score < 0.55):
-                        emoji = "😊";
-                        break;
-                    case (score >= 0.55 && score < 0.70):
-                        emoji = "😄";
-                        break;
-                    case (score >= 0.70 && score < 0.85):
-                        emoji = "😘";
-                        break;
-                    case (score >= 0.85):
-                        emoji = "😍";
-                        break;                   
+                for (var j = 0; j < history.length; j++) {
+                    var entry = history[j];
+                    entry.emoji = getEmojiForScore(entry.score);
                 }
 
                 var sentiment = {
                     phrase:         phrase,
                     tweets:         tweets,
                     totalsentiment: totalsentiment,
-                    score:          (score !== null ? score.toFixed(2) : score),
+                    score:          score,
                     emoji:          emoji,
                     history:        history 
                 };
 
+                console.log(sentiment);
+
                 totalTweets += data[i].tweets;
                 sentiments.push(sentiment);
+
+                if (sentiment.phrase == $scope.selectedPhrase.phrase) {
+                    $scope.selectedPhrase = sentiment;
+                }
             }
 
             $scope.sentiments = sentiments;
@@ -100,8 +83,39 @@ app.controller('myCtrl', function($scope, $http, $timeout) {
     $scope.totalTweets = 0;
     $scope.sentiments = [];
 
-    $scope.selectedPhrase = null;
+    $scope.selectedPhrase = {phrase: null};
 
     refresh();
    	poll();
 });
+
+function getEmojiForScore(score) {
+    switch (true) {
+        case (score === null):
+            emoji = "❔";
+            break;
+        case (score <  0.15):
+            emoji = "😡";
+            break;
+        case (score >= 0.15 && score < 0.30):
+            emoji = "😠";
+            break;
+        case (score >= 0.30 && score < 0.45):
+            emoji = "😐";
+            break;
+        case (score >= 0.45 && score < 0.55):
+            emoji = "😊";
+            break;
+        case (score >= 0.55 && score < 0.70):
+            emoji = "😄";
+            break;
+        case (score >= 0.70 && score < 0.85):
+            emoji = "😘";
+            break;
+        case (score >= 0.85):
+            emoji = "😍";
+            break;                   
+    }
+
+    return emoji;
+}
