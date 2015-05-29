@@ -102,7 +102,10 @@ app.get('/sentiment/:phrase/:startDate/:endDate', function (req, res) {
 	var startDate = req.params.startDate;
 	var endDate = req.params.endDate;
 
-	getSentimentForPhrase(keyword.phrase, startDate, endDate, function(sentiment) {
+	var startDateISO = moment(startDate).toISOString();
+	var endDateISO = moment(endDate).toISOString();
+
+	getSentimentForPhrase(keyword.phrase, startDateISO, endDateISO, function(sentiment) {
 		res.json(sentiment);
 	});
 });
@@ -176,15 +179,14 @@ console.log("Server listening on port " + port);
 //Functions
 
 var calculateSentimentForAllKeywords = function(callback) {
-	var today = moment().startOf('day').toISOString();
-	//var endDate = moment().startOf('day').subtract(1, 'days').toISOString();
-
-	console.log(startDate + " --- " + endDate);
+	var startDate = moment().startOf('day').toISOString();
+	var endDate = moment().endOf('day').toISOString();
 
 	var result = [];
 	keywordsCollection.find().sort({phrase: 1}).toArray(function(err, keywords) {
 		if (keywords.length == 0) {
 			sentiments = [];
+			callback();
 		} else {
 			async.eachSeries(keywords, function(keyword, callback) {
 				getSentimentForPhrase(keyword.phrase, startDate, endDate, function(sentiment) {
@@ -224,11 +226,11 @@ var getSentimentForPhrase = function(phrase, startDate, endDate, callback) {
     	}
 	};
 
-	//resultsCollection.find({phrase: phrase, date: {'$gte': startDate,'$lt': endDate}}).sort({date: -1}).toArray(function(err, docs) {
 	cacheCollection.find(findObject).sort({date: -1}).toArray(function(err, docs) {
 
 		var tweets = 0;
 		var totalsentiment = 0;
+		var history = [];
 
 		for (var i = 0; i<docs.length; i++) {
 			var entry = docs[i];
@@ -236,16 +238,21 @@ var getSentimentForPhrase = function(phrase, startDate, endDate, callback) {
 			tweets += entry.tweets;
 			totalsentiment += entry.totalsentiment;
 
-			entry.history.forEach(function(tweet) {
+			if (i == 0) {
 
-				var singleSentiment = tweet.sentiment;
-				if (singleSentiment > singleScoreUpperBound) singleSentiment = singleScoreUpperBound;
-				if (singleSentiment < singleScoreLowerBound) singleSentiment = singleScoreLowerBound;
-				
-				// Map average to score between 0 and 1
-				tweet.score = ((singleSentiment - singleScoreLowerBound) / (singleScoreUpperBound - singleScoreLowerBound)) * (scoreUpperBound - scoreLowerBound) + scoreLowerBound;
+				entry.history.forEach(function(tweet) {
 
-			});
+					var singleSentiment = tweet.sentiment;
+					if (singleSentiment > singleScoreUpperBound) singleSentiment = singleScoreUpperBound;
+					if (singleSentiment < singleScoreLowerBound) singleSentiment = singleScoreLowerBound;
+					
+					// Map average to score between 0 and 1
+					tweet.score = ((singleSentiment - singleScoreLowerBound) / (singleScoreUpperBound - singleScoreLowerBound)) * (scoreUpperBound - scoreLowerBound) + scoreLowerBound;
+
+				});
+
+				history = entry.history;
+			}
 		}
 
 		var average = totalsentiment / tweets;
