@@ -184,8 +184,8 @@
 			</div>
 
   			<div class="well">
-		  		Start Date: <input type="text" class="span2" ng-model="startDate" id="infoModalStartDate">
-		  		End Date: <input type="text" class="span2" ng-model="endDate" id="infoModalEndDate">
+		  		Start Date: <input type="text" class="span2" ng-model="startDate" id="infoModalStartDatePicker">
+		  		End Date: <input type="text" class="span2" ng-model="endDate" id="infoModalEndDatePicker">
 
 				<button type="button" class="btn btn-primary" ng-click="infoModalRefresh()">Refresh</button>
 	      	</div>
@@ -263,10 +263,10 @@
 		//       chart.draw(data, options);
 		//     }
 
-		$(function(){
-			$('#infoModalStartDate').datepicker({format: 'dd-mm-yyyy'});
-			$('#infoModalEndDate').datepicker({format: 'dd-mm-yyyy'});
-		});
+		// $(function(){
+		// 	$('#infoModalStartDatePicker').datepicker({format: 'dd-mm-yyyy'});
+		// 	$('#infoModalEndDatePicker').datepicker({format: 'dd-mm-yyyy'});
+		// });
 	</script>
 
 </body>
