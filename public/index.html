@@ -11,7 +11,8 @@
 	<link href="css/dashboard.css" rel="stylesheet">
 
 	<script src="js/jquery-2.1.1.min.js"></script>
-	<script src="js/bootstrap.min.js"></script>
+	<!--<script src="js/bootstrap.min.js"></script>-->
+	<script src="js/bootstrap.js"></script>
 	<script src="js/bootstrap-datepicker.js"></script>
 	<script src="js/angular.js"></script>
 	<script src="js/controller.js"></script>
@@ -100,6 +101,7 @@
   			<div class="well">
 		  		Start Date: <input type="text" class="span2" value="02-16-2012" id="infoModalStartDate">
 		  		End Date: <input type="text" class="span2" value="02-16-2012" id="infoModalEndDate">
+
 				<button type="button" class="btn btn-primary" ng-click="infoModalRefresh()">Refresh</button>
 
 			  	<!--<div class="input-append date" id="infoModalEndDate" data-date="{{selectedPhrase.endDate}}" data-date-format="dd-mm-yyyy">
@@ -196,8 +198,8 @@
 		    }
 
 		$(function(){
-			$('#infoModalStartDate').datepicker();
-			$('#infoModalEndDate').datepicker();
+			$('#infoModalStartDate').datepicker({format: 'mm-dd-yyyy'});
+			$('#infoModalEndDate').datepicker({format: 'mm-dd-yyyy'});
 		});
 	</script>
 
