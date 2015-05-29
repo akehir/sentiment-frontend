@@ -50,8 +50,6 @@ app.controller('myCtrl', function($scope, $http, $timeout) {
                     history:        history 
                 };
 
-                console.log(sentiment);
-
                 totalTweets += data[i].tweets;
                 sentiments.push(sentiment);
 

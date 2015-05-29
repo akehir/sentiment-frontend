@@ -9,7 +9,7 @@ var moment = require('moment');
 // Settings
 var dbKeywordsCollection	= "keywords";
 var dbResultsCollection		= "results";
-var dbAnalyzingCollection	= "analyzing";
+var dbCacheCollection		= "cache";
 
 var sentiments = [];
 
@@ -31,7 +31,7 @@ app.configure(function() {
 // Database Connection
 var mongo = {};
 var keywordsCollection = null;
-var analyzingCollection = null;
+var cacheCollection = null;
 var resultsCollection = null;
 
 if (process.env.VCAP_SERVICES) {
@@ -55,8 +55,8 @@ var mongoConnection = mongoClient.connect(mongo.url, function(err, db) {
     myDb = db;
 
 	keywordsCollection = myDb.collection(dbKeywordsCollection);
-    analyzingCollection = myDb.collection(dbAnalyzingCollection);
 	resultsCollection = myDb.collection(dbResultsCollection);
+	cacheCollection = myDb.collection(dbCacheCollection);
 	
 	// Start the App after DB Connection
 	startApp();
