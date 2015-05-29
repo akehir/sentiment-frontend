@@ -99,10 +99,10 @@ function getEmojiForScore(score) {
             emoji = "😠";
             break;
         case (score >= 0.30 && score < 0.45):
-            emoji = "😐";
+            emoji = "😕";
             break;
         case (score >= 0.45 && score < 0.55):
-            emoji = "😊";
+            emoji = "😶";
             break;
         case (score >= 0.55 && score < 0.70):
             emoji = "😄";
