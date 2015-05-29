@@ -116,3 +116,13 @@ body {
 .emoji {
   font-size: 20pt;
 }
+
+.clickableDiv:hover {
+  background: #f9f9f9;
+  opacity: 0.9;
+  border-radius: 5px;
+}
+
+.clickableDiv {
+  cursor: pointer;
+}

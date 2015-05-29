@@ -37,21 +37,29 @@
 		<h2 class="page-header">Dashboard</h2>
 
 		<div class="row placeholders">
-			<div class="col-xs-6 col-sm-3 placeholder">
+			<div class="col-xs-6 col-sm-2 placeholder">
 			  <h4>{{totalPhrases}}</h4>
 			  <span class="text-muted">Phrases</span>
 			</div>
-			<div class="col-xs-6 col-sm-3 placeholder">
+			<div class="col-xs-6 col-sm-2 placeholder">
 			  <h4>{{totalTweets}}</h4>
 			  <span class="text-muted">Tweets Analyzed</span>
 			</div>
-			<div class="col-xs-6 col-sm-3 placeholder">
-			  <h4>{{cpuLoad}}%</h4>
-			  <span class="text-muted">CPU</span>
+			<div data-toggle="modal" data-target="#testModal" class="col-xs-6 col-sm-2 placeholder clickableDiv">
+			  <h4>1</h4>
+			  <span class="text-muted">Frontend</span>
 			</div>
-			<div class="col-xs-6 col-sm-3 placeholder">
-			  <h4>{{memUsed}} / {{memTotal}} MB</h4>
-			  <span class="text-muted">Memory</span>
+			<div data-toggle="modal" data-target="#testModal" class="col-xs-6 col-sm-2 placeholder clickableDiv">
+			  <h4>1</h4>
+			  <span class="text-muted">Analyzer</span>
+			</div>
+			<div data-toggle="modal" data-target="#testModal" class="col-xs-6 col-sm-2 placeholder clickableDiv">
+			  <h4> 2 </h4>
+			  <span class="text-muted">Aggregator</span>
+			</div>
+			<div data-toggle="modal" data-target="#testModal" class="col-xs-6 col-sm-2 placeholder clickableDiv">
+			  <h4>1</h4>
+			  <span class="text-muted">Twitter</span>
 			</div>
 		</div>
 
@@ -89,7 +97,53 @@
 		</div>
     </div>
 
-	<!-- Modal -->
+    <!-- Modal -->
+
+    <div class="modal fade" id="testModal" tabindex="-1" role="dialog" aria-labelledby="infoModalLabel" aria-hidden="true">
+    	<div class="modal-dialog">
+	    	<div class="modal-content">
+	      		<div class="modal-header">
+	        		<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	        			<h4 class="modal-title" id="infoModalLabel">TEST</h4>
+	      		</div>
+	      		<div class="modal-body">
+	      			<div class="table-responsive">
+				<table class="table table-striped">
+				  <thead>
+				    <tr>
+				      <th>#</th>
+				      <th>ID</th>
+				      <th>CPU</th>
+				      <th>Memory</th>
+				    </tr>
+				  </thead>
+				  <tbody>
+				    <tr class="tr-middle" style="font-size: 0.9em">
+				      <td>1</td>
+				      <td>ScheissServer1</td>
+				      <td>60%</td>
+   				      <td>120/128 MB</td>
+				    </tr>
+				    <tr class="tr-middle" style="font-size: 0.9em">
+				      <td>2</td>
+				      <td>ScheissServer2</td>
+				      <td>60%</td>
+   				      <td>120/128 MB</td>
+				    </tr>
+				    <tr class="tr-middle" style="font-size: 0.9em">
+				      <td>3</td>
+				      <td>ScheissServer3</td>
+				      <td>60%</td>
+   				      <td>120/128 MB</td>
+				    </tr>
+				  </tbody>
+				</table>
+			</div>
+	      		</div>
+	      	</div>
+	    </div>
+    </div>
+
 	<div class="modal fade" id="infoModal" tabindex="-1" role="dialog" aria-labelledby="infoModalLabel" aria-hidden="true">
 	  <div class="modal-dialog">
 	    <div class="modal-content">
