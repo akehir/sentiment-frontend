@@ -1,38 +1,17 @@
-## Simple Sentiment Analysis application
+This README.md file is displayed on your project page. You should edit this 
+file to describe your project, including instructions for building and 
+running the project, pointers to the license under which you are making the 
+project available, and anything else you think would be useful for others to
+know.
 
-![Ambivalent Smiley](http://simplesentimentanalysis.mybluemix.net/images/content.png "Ambivalent Smiley")
+We have created an empty license.txt file for you. Well, actually, it says,
+"<Replace this text with the license you've chosen for your project.>" We 
+recommend you edit this and include text for license terms under which you're
+making your code available. A good resource for open source licenses is the 
+[Open Source Initiative](http://opensource.org/).
 
-We forked [this](https://hub.jazz.net/project/srich/Sentiment%20Analysis%20App/overview) project to use Git hosting and the continuous integration deployment pipeline.
+Be sure to update your project's profile with a short description and 
+eye-catching graphic.
 
-Sample application demonstrating how to build a sentiment analysis app usind Node.js and a couple modules.  
-The application takes a keyword or hashtag, connects to Twitter to get a stream of matching tweets, 
-and runs those tweets through a sentiment-analysis module to produce a sentiment score.
-
-You can play with an instance of the application running at http://simplesentimentanalysis.mybluemix.net/
-
-You can explore the code by clicking into the SimpleSentimentAnalysis folder.
-
-### Running the application on your desktop
-
-Download the source of the application by selecting the SimpleSentimentAnalysis folder and selecting
-"Export as zip" from the Actions menu(![Actions](https://hub.jazz.net/code/images/gear.png)) in the navigator.
-
-Unzip the application in a working directory.
-
-Use npm to get the required modules:
-
-    npm install
-
-Run the application with node:
-
-    node app.js
-
-You should see a confirmation that the application is running on port 3000, 
-and you can access it with your browser at http://localhost:3000.
-
-### Running the application using a Cloud Foundry PaaS runtime
-
-If you have access to a Cloud Foundry-based runtime, like the Pivotal Cloud Foundry offering or IBM's BlueMix,
-you can also run the application in those environments.
-
-### Licensed under the EPL (see [license.txt](license.txt))
+Finally, consider defining some sprints and work items in Track & Plan to give 
+interested developers a sense of your cadence and upcoming enhancements.
