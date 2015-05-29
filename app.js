@@ -176,8 +176,8 @@ console.log("Server listening on port " + port);
 //Functions
 
 var calculateSentimentForAllKeywords = function(callback) {
-	var startDate = moment().startOf('day').toISOString();
-	var endDate = moment().startOf('day').subtract(1, 'days').toISOString();
+	var today = moment().startOf('day').toISOString();
+	//var endDate = moment().startOf('day').subtract(1, 'days').toISOString();
 
 	console.log(startDate + " --- " + endDate);
 
@@ -216,37 +216,36 @@ var getSentimentForPhrase = function(phrase, startDate, endDate, callback) {
 	var singleScoreUpperBound	=  5.0;
 	var singleScoreLowerBound	= -5.0;
 
-
+	var findObject = {
+		phrase: phrase,
+		date: {
+	        $gte: startDate,
+	        $lt: endDate
+    	}
+	};
 
 	//resultsCollection.find({phrase: phrase, date: {'$gte': startDate,'$lt': endDate}}).sort({date: -1}).toArray(function(err, docs) {
-	resultsCollection.find({phrase: phrase}).sort({date: -1}).toArray(function(err, docs) {
+	cacheCollection.find(findObject).sort({date: -1}).toArray(function(err, docs) {
 
 		var tweets = 0;
 		var totalsentiment = 0;
-		var history = [];
 
 		for (var i = 0; i<docs.length; i++) {
 			var entry = docs[i];
 
-			tweets++;
-			totalsentiment += entry.sentiment;
+			tweets += entry.tweets;
+			totalsentiment += entry.totalsentiment;
 
-			if(i < 5) {
-				var singleSentiment = entry.sentiment;
+			entry.history.forEach(function(tweet) {
+
+				var singleSentiment = tweet.sentiment;
 				if (singleSentiment > singleScoreUpperBound) singleSentiment = singleScoreUpperBound;
 				if (singleSentiment < singleScoreLowerBound) singleSentiment = singleScoreLowerBound;
 				
 				// Map average to score between 0 and 1
-				var singleScore = ((singleSentiment - singleScoreLowerBound) / (singleScoreUpperBound - singleScoreLowerBound)) * (scoreUpperBound - scoreLowerBound) + scoreLowerBound;
+				tweet.score = ((singleSentiment - singleScoreLowerBound) / (singleScoreUpperBound - singleScoreLowerBound)) * (scoreUpperBound - scoreLowerBound) + scoreLowerBound;
 
-
-				var tweet = {
-					text: entry.text,
-					sentiment: entry.sentiment,
-					score: singleScore
-				};
-				history.push(tweet);
-			}
+			});
 		}
 
 		var average = totalsentiment / tweets;
