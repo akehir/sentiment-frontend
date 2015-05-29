@@ -12,7 +12,21 @@ app.controller('myCtrl', function($scope, $http, $timeout) {
     };
 
     $scope.infoPressed = function(sentiment) {
-        $scope.selectedPhrase = sentiment;
+
+        $scope.infoModalStartDate = moment().subtract(1, 'days').format("DD-MM-YYYY");
+        $scope.infoModalEndDate = moment().format("DD-MM-YYYY");
+
+        $scope.startDate = $scope.infoModalStartDate;
+        $scope.endDate = $scope.infoModalEndDate;
+
+        reloadSentiment(sentiment.phrase, $scope.infoModalStartDate, $scope.infoModalEndDate);
+    };
+
+    $scope.infoModalRefresh = function() {
+        console.log("Refresh Info Modal");
+
+        $scope.infoModalStartDate = $scope.startDate;
+        $scope.infoModalEndDate = $scope.endDate;
     };
 
     $scope.removePressed = function(sentiment) {
@@ -21,23 +35,75 @@ app.controller('myCtrl', function($scope, $http, $timeout) {
         });
     };
 
+    var reloadSentiment = function(phrase, startDate, endDate) {
+
+        $http.get('/sentiment/'+phrase+'/'+startDate+'/'+endDate).success(function(data) {
+
+            var phrase          = data.phrase;
+            var tweets          = data.tweets;
+            var totalsentiment  = data.totalsentiment;
+            var score           = data.score;
+            score = (score !== null ? score.toFixed(2) : score);
+            var emoji           = getEmojiForScore(score);
+            var latestTweets    = data.latestTweets;
+            var history         = data.history;
+
+            for (var j = 0; j < latestTweets.length; j++) {
+                var entry = latestTweets[j];
+                entry.emoji = getEmojiForScore(entry.score);
+            }
+
+            var rows = [];
+
+            for (var j = 0; j < history.length; j++) {
+                var entry = history[j];
+                entry.date  = moment(entry.date).format("DD-MM-YYYY");
+                entry.score = (entry.score !== null ? entry.score.toFixed(2) : entry.score);
+                entry.emoji = getEmojiForScore(entry.score);
+
+                rows.push([j, entry.score]);
+            }
+
+            var sentiment = {
+                phrase:         phrase,
+                tweets:         tweets,
+                totalsentiment: totalsentiment,
+                score:          score,
+                emoji:          emoji,
+                latestTweets:   latestTweets,
+                history:        history 
+            };
+
+            $scope.selectedPhrase = sentiment;
+        });
+    };
+
     var refresh = function() {
+
+        console.log($scope.selectedPhrase.phrase);
+        if ($scope.selectedPhrase.phrase != null) {
+            reloadSentiment($scope.selectedPhrase.phrase, $scope.infoModalStartDate, $scope.infoModalEndDate);
+        }
+
     	$http.get('/sentiment').success(function(data) {
+
     		var sentiments = [];
-            var totalTweets = 0;
+            var totalTweets = data.tweets;
 
-            for (var i = 0; i < data.length; i++) {
+            var rawSentiments = data.sentiments;
 
-                var phrase          = data[i].phrase;
-                var tweets          = data[i].tweets;
-                var totalsentiment  = data[i].totalsentiment;
-                var score           = data[i].score;
+            for (var i = 0; i < rawSentiments.length; i++) {
+
+                var phrase          = rawSentiments[i].phrase;
+                var tweets          = rawSentiments[i].tweets;
+                var totalsentiment  = rawSentiments[i].totalsentiment;
+                var score           = rawSentiments[i].score;
                 score = (score !== null ? score.toFixed(2) : score);
                 var emoji           = getEmojiForScore(score);
-                var history         = data[i].history;
+                var latestTweets    = rawSentiments[i].latestTweets;
 
-                for (var j = 0; j < history.length; j++) {
-                    var entry = history[j];
+                for (var j = 0; j < latestTweets.length; j++) {
+                    var entry = latestTweets[j];
                     entry.emoji = getEmojiForScore(entry.score);
                 }
 
@@ -47,15 +113,10 @@ app.controller('myCtrl', function($scope, $http, $timeout) {
                     totalsentiment: totalsentiment,
                     score:          score,
                     emoji:          emoji,
-                    history:        history 
+                    latestTweets:   latestTweets 
                 };
 
-                totalTweets += data[i].tweets;
                 sentiments.push(sentiment);
-
-                if (sentiment.phrase == $scope.selectedPhrase.phrase) {
-                    $scope.selectedPhrase = sentiment;
-                }
             }
 
             $scope.sentiments = sentiments;
@@ -77,11 +138,18 @@ app.controller('myCtrl', function($scope, $http, $timeout) {
         }, 1000);
     };
 
+
     $scope.totalTerms = 0;
     $scope.totalTweets = 0;
     $scope.sentiments = [];
 
+    $scope.startDate = moment().subtract(1, 'days').format("DD-MM-YYYY");
+    $scope.endDate = moment().format("DD-MM-YYYY");
+    $scope.today = moment().format("dd, DD-MM-YYYY");
+
     $scope.selectedPhrase = {phrase: null};
+    $scope.infoModalStartDate = null;
+    $scope.infoModalEndDate = null;
 
     refresh();
    	poll();

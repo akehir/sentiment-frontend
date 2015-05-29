@@ -12,6 +12,7 @@ var dbResultsCollection		= "results";
 var dbCacheCollection		= "cache";
 
 var sentiments = [];
+var totalTweets = 0;
 
 
 
@@ -90,22 +91,27 @@ app.get('/sentiment', function (req, res) {
 		Delivers all phrases with score of last day
 	*/
 
-	res.send(sentiments);
+	var response = {
+		"tweets": totalTweets,
+		"sentiments": sentiments
+	};
+
+	res.send(response);
 });
 
-app.get('/sentiment/:phrase/:startDate/:endDate', function (req, res) {
+app.get('/sentiment/:phrase/:start/:end', function (req, res) {
 	/*
 		Delivers JSON with results for specific dates
 	*/
 
 	var phrase = req.params.phrase;
-	var startDate = req.params.startDate;
-	var endDate = req.params.endDate;
+	var startDate = req.params.start;
+	var endDate = req.params.end;
 
-	var startDateISO = moment(startDate).toISOString();
-	var endDateISO = moment(endDate).toISOString();
+	var startDateISO = moment(startDate, "DD-MM-YYYY").toISOString();
+	var endDateISO = moment(endDate, "DD-MM-YYYY").endOf('day').toISOString();
 
-	getSentimentForPhrase(keyword.phrase, startDateISO, endDateISO, function(sentiment) {
+	getSentimentForPhrase(phrase, startDateISO, endDateISO, function(sentiment) {
 		res.json(sentiment);
 	});
 });
@@ -116,13 +122,15 @@ app.get('/usage', function (req, res) {
 		Delivers JSON with current CPU/memory etc. usage
 	*/
 
-	os.cpuUsage(function(v){
-	    res.json({
-			memUsed: (os.totalmem() - os.freemem()),
-			memTotal: os.totalmem(),
-			cpuLoad: v
-		});
-	});
+	// os.cpuUsage(function(v){
+	//     res.json({
+	// 		memUsed: (os.totalmem() - os.freemem()),
+	// 		memTotal: os.totalmem(),
+	// 		cpuLoad: v
+	// 	});
+	// });
+
+	res.json({});
 
 });
 
@@ -177,33 +185,50 @@ console.log("Server listening on port " + port);
 
 
 //Functions
-
 var calculateSentimentForAllKeywords = function(callback) {
-	var startDate = moment().startOf('day').toISOString();
-	var endDate = moment().endOf('day').toISOString();
-
-	var result = [];
-	keywordsCollection.find().sort({phrase: 1}).toArray(function(err, keywords) {
-		if (keywords.length == 0) {
-			sentiments = [];
-			callback();
-		} else {
-			async.eachSeries(keywords, function(keyword, callback) {
-				getSentimentForPhrase(keyword.phrase, startDate, endDate, function(sentiment) {
-					result.push(sentiment);
-					callback();
-				});
-			}, function(err) {
-				if( err ) {
-			      // One of the iterations produced an error.
-			      // All processing will now stop.
-			      console.log('A file failed to process');
-			    } else {
-			      sentiments = result;
-			      callback();
-			    }
-			});
+	
+	cacheCollection.aggregate([
+		{
+			$group: {
+				_id: "sum",
+				tweets: { $sum: "$tweets" }
+			}
 		}
+	],
+	function(err, result) {
+
+		if (result.length > 0)
+			totalTweets = result[0].tweets;
+		else
+			totalTweets = 0;
+
+		var startDate = moment().startOf('day').toISOString();
+		var endDate = moment().endOf('day').toISOString();
+
+		var result = [];
+		keywordsCollection.find().sort({phrase: 1}).toArray(function(err, keywords) {
+			if (keywords.length == 0) {
+				sentiments = [];
+				callback();
+			} else {
+				async.eachSeries(keywords, function(keyword, callback) {
+					getSentimentForPhrase(keyword.phrase, startDate, endDate, function(sentiment) {
+						result.push(sentiment);
+						callback();
+					});
+				}, function(err) {
+					if( err ) {
+				      // One of the iterations produced an error.
+				      // All processing will now stop.
+				      console.log('A file failed to process');
+				    } else {
+				      sentiments = result;
+				      callback();
+				    }
+				});
+			}
+		});
+
 	});
 }
 
@@ -226,21 +251,23 @@ var getSentimentForPhrase = function(phrase, startDate, endDate, callback) {
     	}
 	};
 
-	cacheCollection.find(findObject).sort({date: -1}).toArray(function(err, docs) {
+	cacheCollection.find(findObject).sort({date: -1}).toArray(function(err, cacheEntries) {
 
 		var tweets = 0;
 		var totalsentiment = 0;
+		var latestTweets = [];
 		var history = [];
 
-		for (var i = 0; i<docs.length; i++) {
-			var entry = docs[i];
+		// Calculate Score and History for each Day
+		for (var i = 0; i<cacheEntries.length; i++) {
+			var cacheEntry = cacheEntries[i];
 
-			tweets += entry.tweets;
-			totalsentiment += entry.totalsentiment;
+			tweets += cacheEntry.tweets;
+			totalsentiment += cacheEntry.totalsentiment;
 
 			if (i == 0) {
 
-				entry.history.forEach(function(tweet) {
+				cacheEntry.latestTweets.forEach(function(tweet) {
 
 					var singleSentiment = tweet.sentiment;
 					if (singleSentiment > singleScoreUpperBound) singleSentiment = singleScoreUpperBound;
@@ -251,10 +278,26 @@ var getSentimentForPhrase = function(phrase, startDate, endDate, callback) {
 
 				});
 
-				history = entry.history;
+				latestTweets = cacheEntry.latestTweets;
 			}
+
+
+			var average = cacheEntry.totalsentiment / cacheEntry.tweets;
+
+			// Limit average to bounds
+			if (average > averageUpperBound) average = averageUpperBound;
+			if (average < averageLowerBound) average = averageLowerBound;
+			
+			// Map average to score between 0 and 1
+			var score = ((average - averageLowerBound) / (averageUpperBound - averageLowerBound)) * (scoreUpperBound - scoreLowerBound) + scoreLowerBound;
+
+			cacheEntry.score = score;
+
+			history.push(cacheEntry);
 		}
 
+
+		// Total Score
 		var average = totalsentiment / tweets;
 
 		// Limit average to bounds
@@ -270,6 +313,7 @@ var getSentimentForPhrase = function(phrase, startDate, endDate, callback) {
 				totalsentiment: totalsentiment,
 				average: average,
 				score: score,
+				latestTweets: latestTweets,
 				history: history
 			};
 
