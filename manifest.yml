@@ -1,14 +1,14 @@
 ---
 applications:
-- name: SentimentAnalysis-Frontend
+- name: SentiFront
   memory: 128M
   instances: 1
-  command: node app.js
-  host: sentimentanalysis-frontend-akehir
+  command: node --expose-gc app.js
+  host: asenti-front
   domain: eu-gb.mybluemix.net
   path: .
   services: 
-   - mongodb-sentiment
-   - Auto-Scaling-z4
-   - Monitoring and Analytics-t1
-
+   - sentiment-mongodb
+   - sentiment-mq
+   - sentiment-autoscaling
+   - sentiment-monitoring
