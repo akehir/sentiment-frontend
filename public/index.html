@@ -1,275 +1,176 @@
 <html ng-app="sentiment" ng-controller="myCtrl">
 <head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta charset="utf8" />
-	<title>ASE Sentiment Analysis - Dashboard</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf8"/>
+    <title>ASE Sentiment Analysis - Dashboard</title>
 
-	<link href="css/bootstrap.min.css" rel="stylesheet">
-	<link href="css/datepicker.css" rel="stylesheet">
-	<link href="css/dashboard.css" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/datepicker.css" rel="stylesheet">
+    <link href="css/dashboard.css" rel="stylesheet">
 
-	<script src="js/jquery-2.1.1.min.js"></script>
-	<script src="js/bootstrap.js"></script>
-	<script src="js/bootstrap-datepicker.js"></script>
-	<script src="js/angular.js"></script>
-	<script src="js/moment.js"></script>
-	<script src="js/controller.js"></script>
-
-	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script src="js/jquery-2.1.1.min.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <script src="js/angular.js"></script>
+    <script src="js/moment.js"></script>
+    <script src="js/controller.js"></script>
 </head>
 <body>
-	<nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container-fluid">
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
         <div class="navbar-header">
-          <a class="navbar-brand" href="#">ASE - Sentiment Analysis</a>
+            <a class="navbar-brand" href="#">ASE - Sentiment Analysis</a>
         </div>
 
         <form class="navbar-form navbar-right">
-	        <input type="text" class="form-control" ng-model="addTerm" placeholder="Phrase...">
-	    	<button type="submit" class="btn btn-success" ng-click="addPressed()">Add</button>
-	    </form>
-      </div>
-    </nav>
+            <input type="text" class="form-control" ng-model="addTerm" placeholder="Phrase...">
+            <button type="submit" class="btn btn-success" ng-click="addPressed()">Add</button>
+        </form>
+    </div>
+</nav>
 
-    <div class="container-fluid">
-		<h2 class="page-header">Dashboard</h2>
+<div class="container-fluid">
+    <h2 class="page-header">Dashboard</h2>
 
-		<div class="row placeholders">
-			<div class="col-xs-6 col-sm-2 placeholder">
-			  <h3>{{totalPhrases}}</h3>
-			  <span class="text-muted">Phrases</span>
-			</div>
-			<div class="col-xs-6 col-sm-2 placeholder">
-			  <h3>{{totalTweets}}</h3>
-			  <span class="text-muted">Tweets Analyzed</span>
-			</div>
-			<!--
-			<div data-toggle="modal" data-target="#usageModal" class="col-xs-6 col-sm-2 placeholder clickableDiv">
-			  <h3>1</h3>
-			  <span class="text-muted">Frontend Instances</span>
-			</div>
-			<div data-toggle="modal" data-target="#usageModal" class="col-xs-6 col-sm-2 placeholder clickableDiv">
-			  <h3>1</h3>
-			  <span class="text-muted">Analyzers</span>
-			</div>
-			<div data-toggle="modal" data-target="#usageModal" class="col-xs-6 col-sm-2 placeholder clickableDiv">
-			  <h3> 2 </h3>
-			  <span class="text-muted">Aggregators</span>
-			</div>
-			<div data-toggle="modal" data-target="#usageModal" class="col-xs-6 col-sm-2 placeholder clickableDiv">
-			  <h3>1</h3>
-			  <span class="text-muted">Twitter Streamer</span>
-			</div>
-			-->
-		</div>
-
-		<h3 class="sub-header">Analysis results for {{today}}</h3>
-		<div class="table-responsive">
-			<table class="table table-striped">
-			  <thead>
-			    <tr>
-			      <th>#</th>
-			      <th> </th>
-			      <th style="width: 100%">Phrase</th>
-			      <th>Tweets</th>
-			      <th>Feeling</th>
-			      <th>Score</th>
-			      <th> </th>
-			      <th> </th>
-			    </tr>
-			  </thead>
-			  <tbody>
-			    <tr class="tr-middle" ng-repeat="sentiment in sentiments">
-			      <td>{{$index + 1}}</td>
-			      <td class="emoji">{{sentiment.emoji}}</td>
-			      <td>{{sentiment.phrase}}</td>
-			      <td style="text-align: right">{{sentiment.tweets}}</td>
-			      <td style="text-align: right">{{sentiment.totalsentiment}}</td>
-			      <td style="text-align: right">{{sentiment.score}}</td>
-			      <td>
-			      	<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#infoModal" ng-click="infoPressed(sentiment)">Info</button>
-			      </td><td>
-			      	<button type="button" class="btn btn-danger btn-mini" ng-click="removePressed(sentiment)">Remove</button>
-			      </td>
-			    </tr>
-			  </tbody>
-			</table>
-		</div>
+    <div class="row placeholders">
+        <div class="col-xs-6 col-sm-2 placeholder">
+            <h3>{{totalPhrases}}</h3>
+            <span class="text-muted">Phrases</span>
+        </div>
+        <div class="col-xs-6 col-sm-2 placeholder">
+            <h3>{{totalTweets}}</h3>
+            <span class="text-muted">Tweets Analyzed</span>
+        </div>
     </div>
 
-    <!-- Modal -->
+    <h3 class="sub-header">Analysis results for {{today}}</h3>
 
-    <div class="modal fade" id="usageModal" tabindex="-1" role="dialog" aria-labelledby="usageModelLabel" aria-hidden="true">
-    	<div class="modal-dialog">
-	    	<div class="modal-content">
-	      		<div class="modal-header">
-	        		<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-	        			<h4 class="modal-title" id="usageModalLabel">Server Usage</h4>
-	      		</div>
-	      		<div class="modal-body">
-	      			<div class="table-responsive">
-				<table class="table table-striped">
-				  <thead>
-				    <tr>
-				      <th>#</th>
-				      <th>ID</th>
-				      <th>CPU</th>
-				      <th>Memory</th>
-				    </tr>
-				  </thead>
-				  <tbody>
-				    <tr class="tr-middle" style="font-size: 0.9em">
-				      <td>ID</td>
-				      <td>Name</td>
-				      <td>CPUUsage</td>
-   				      <td>UsedMem/FreeMem MB</td>
-				    </tr>
-				  </tbody>
-				</table>
-			</div>
-	      		</div>
-	      	</div>
-	    </div>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th></th>
+                <th style="width: 100%">Phrase</th>
+                <th>Tweets</th>
+                <th>Feeling</th>
+                <th>Score</th>
+                <th></th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="tr-middle" ng-repeat="sentiment in sentiments">
+                <td>{{$index + 1}}</td>
+                <td class="emoji">{{sentiment.emoji}}</td>
+                <td>{{sentiment.phrase}}</td>
+                <td style="text-align: right">{{sentiment.tweets}}</td>
+                <td style="text-align: right">{{sentiment.totalsentiment}}</td>
+                <td style="text-align: right">{{sentiment.score}}</td>
+                <td>
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#infoModal"
+                            ng-click="infoPressed(sentiment)">Info
+                    </button>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-mini" ng-click="removePressed(sentiment)">Remove
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
     </div>
+</div>
 
-	<div class="modal fade" id="infoModal" tabindex="-1" role="dialog" aria-labelledby="infoModalLabel" aria-hidden="true">
-	  <div class="modal-dialog">
-	    <div class="modal-content">
-	      <div class="modal-header">
-	        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-	        <h4 class="modal-title" id="infoModalLabel">{{selectedPhrase.phrase}}</h4>
-	      </div>
-	      <div class="modal-body">
 
-	      	<div class="table-responsive">
-				<table class="table table-striped">
-				  <thead>
-				    <tr>
-				      <th>#</th>
-				      <th style="width: 100%">Latest Tweets</th>
-				      <th>Feeling</th>
-				      <th>Score</th>
-   				      <th> </th>
-				    </tr>
-				  </thead>
-				  <tbody>
-				    <tr class="tr-middle" ng-repeat="tweet in selectedPhrase.latestTweets" style="font-size: 0.9em">
-				      <td>{{$index + 1}}</td>
-				      <td style="font-size: 0.85em; height: 70px">{{tweet.text}}</td>
-				      <td style="text-align: right">{{tweet.sentiment}}</td>
-				      <td style="text-align: right">{{tweet.score}}</td>
-   				      <td class="emoji" style="font-size: 1.2em">{{tweet.emoji}}</td>
-				    </tr>
-				  </tbody>
-				</table>
-			</div>
+<div class="modal fade" id="infoModal" tabindex="-1" role="dialog" aria-labelledby="infoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="infoModalLabel">{{selectedPhrase.phrase}}</h4>
+            </div>
+            <div class="modal-body">
 
-			<div class="row placeholders">
-				<div class="col-xs-6 col-sm-3 placeholder">
-				  <h4>{{selectedPhrase.tweets}}</h4>
-				  <span class="text-muted">Tweets</span>
-				</div>
-				<div class="col-xs-6 col-sm-3 placeholder">
-				  <h4>{{selectedPhrase.totalsentiment}}</h4>
-				  <span class="text-muted">Feeling</span>
-				</div>
-				<div class="col-xs-6 col-sm-3 placeholder">
-				  <h4>{{selectedPhrase.score}}</h4>
-				  <span class="text-muted">Score</span>
-				</div>
-				<div class="col-xs-6 col-sm-3 placeholder">
-				  <h1>{{selectedPhrase.emoji}}</h1>
-				  <span class="text-muted">&nbsp;</span>
-				</div>
-			</div>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th style="width: 100%">Latest Tweets</th>
+                            <th>Feeling</th>
+                            <th>Score</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr class="tr-middle" ng-repeat="tweet in selectedPhrase.latestTweets" style="font-size: 0.9em">
+                            <td>{{$index + 1}}</td>
+                            <td style="font-size: 0.85em; height: 70px">{{tweet.text}}</td>
+                            <td style="text-align: right">{{tweet.sentiment}}</td>
+                            <td style="text-align: right">{{tweet.score}}</td>
+                            <td class="emoji" style="font-size: 1.2em">{{tweet.emoji}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-  			<div class="well">
-		  		Start Date: <input type="text" class="span2" ng-model="startDate" id="infoModalStartDatePicker">
-		  		End Date: <input type="text" class="span2" ng-model="endDate" id="infoModalEndDatePicker">
+                <div class="row placeholders">
+                    <div class="col-xs-6 col-sm-3 placeholder">
+                        <h4>{{selectedPhrase.tweets}}</h4>
+                        <span class="text-muted">Tweets</span>
+                    </div>
+                    <div class="col-xs-6 col-sm-3 placeholder">
+                        <h4>{{selectedPhrase.totalsentiment}}</h4>
+                        <span class="text-muted">Feeling</span>
+                    </div>
+                    <div class="col-xs-6 col-sm-3 placeholder">
+                        <h4>{{selectedPhrase.score}}</h4>
+                        <span class="text-muted">Score</span>
+                    </div>
+                    <div class="col-xs-6 col-sm-3 placeholder">
+                        <h1>{{selectedPhrase.emoji}}</h1>
+                        <span class="text-muted">&nbsp;</span>
+                    </div>
+                </div>
 
-				<button type="button" class="btn btn-primary" ng-click="infoModalRefresh()">Refresh</button>
-	      	</div>
+                <div class="well">
+                    Start Date: <input type="text" class="span2" ng-model="startDate" id="infoModalStartDatePicker">
+                    End Date: <input type="text" class="span2" ng-model="endDate" id="infoModalEndDatePicker">
 
-	        <!--<div id="chart_div" style="width: 100%; height: 200px"></div>-->
+                    <button type="button" class="btn btn-primary" ng-click="infoModalRefresh()">Refresh</button>
+                </div>
 
-	        <div class="table-responsive">
-				<table class="table table-striped">
-				  <thead>
-				    <tr>
-				      <th style="width: 100%">Daily History</th>
-   				      <th>Tweets</th>
-				      <th>Feeling</th>
-				      <th>Score</th>
-				      <th> </th>
-				    </tr>
-				  </thead>
-				  <tbody>
-				    <tr class="tr-middle" ng-repeat="entry in selectedPhrase.history" style="font-size: 0.9em">
-				      <td>{{entry.date}}</td>
-				      <td style="text-align: right">{{entry.tweets}}</td>
-				      <td style="text-align: right">{{entry.totalsentiment}}</td>
-				      <td style="text-align: right">{{entry.score}}</td>
-				      <td class="emoji" style="font-size: 1.2em">{{entry.emoji}}</td>
-				    </tr>
-				  </tbody>
-				</table>
-			</div>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th style="width: 100%">Daily History</th>
+                            <th>Tweets</th>
+                            <th>Feeling</th>
+                            <th>Score</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr class="tr-middle" ng-repeat="entry in selectedPhrase.history" style="font-size: 0.9em">
+                            <td>{{entry.date}}</td>
+                            <td style="text-align: right">{{entry.tweets}}</td>
+                            <td style="text-align: right">{{entry.totalsentiment}}</td>
+                            <td style="text-align: right">{{entry.score}}</td>
+                            <td class="emoji" style="font-size: 1.2em">{{entry.emoji}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-	      </div>
-	      <!--<div class="modal-footer">
-	        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-	      </div>-->
-	    </div>
-	  </div>
-	</div>
+            </div>
+        </div>
+    </div>
+</div>
 
-	<script>
-		// google.load('visualization', '1', {packages: ['corechart', 'line']});
-		// google.setOnLoadCallback(drawCurveTypes);
-
-		// function drawCurveTypes() {
-		//       var data = new google.visualization.DataTable();
-		//       data.addColumn('number', 'X');
-		//       data.addColumn('number', 'Sentiment');
-
-		//       data.addRows([
-		// 		 [0, 0], [1, 5], [2, 15], [3, 9], [4, 10], [5, 5],
-		// 		 [6, 3], [7, 19], [8, 25], [9, 32], [10, 24], [11, 27],
-		// 		 [12, 22], [13, 32], [14, 34], [15, 39], [16, 36], [17, 40],
-		// 		 [18, 44], [19, 46], [20, 34], [21, 47], [22, 48], [23, 49],
-		// 		 [24, 52], [25, 42], [26, 44], [27, 43], [28, 41], [29, 45],
-		// 		 [30, 47], [31, 52], [32, 53], [33, 51], [34, 54], [35, 57],
-		// 		 [36, 54], [37, 50], [38, 47], [39, 53], [40, 56], [41, 57],
-		// 		 [42, 55], [43, 58], [44, 59], [45, 61], [46, 61], [47, 62],
-		// 		 [48, 64], [49, 60], [50, 58], [51, 57], [52, 59], [53, 62],
-		// 		 [54, 63], [55, 64], [56, 65], [57, 67], [58, 62], [59, 60],
-		// 		 [60, 56], [61, 52], [62, 57], [63, 59], [64, 60], [65, 61],
-		// 		 [66, 62], [67, 64], [68, 67], [69, 72]
-		// 		]);
-
-		//       var options = {
-		//         hAxis: {
-		//           title: 'Time'
-		//         },
-		//         vAxis: {
-		//           title: 'Score'
-		//         },
-		//         series: {
-		//           1: {curveType: 'function'}
-		//         }
-		//       };
-
-		//       var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
-		//       chart.draw(data, options);
-		//     }
-
-		// $(function(){
-		// 	$('#infoModalStartDatePicker').datepicker({format: 'dd-mm-yyyy'});
-		// 	$('#infoModalEndDatePicker').datepicker({format: 'dd-mm-yyyy'});
-		// });
-	</script>
 
 </body>
 </html>
